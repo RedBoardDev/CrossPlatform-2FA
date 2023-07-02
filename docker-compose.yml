@@ -1,0 +1,39 @@
+version: '3'
+services:
+  database:
+    build: ./database
+    env_file:
+      - .env
+      - ./database/.env
+    restart: always
+    container_name: 'crossplateform-2FA_database'
+    volumes:
+      - '$PWD/crossplt2FA/database:/' # replace / by correct path
+      - '$PWD/crossplt2FA/logs/database:/usr/src/app/logs'
+    networks:
+      - backend
+
+  API:
+    build: ./API
+    env_file:
+      - .env
+      - ./API/.env
+    restart: always
+    container_name: 'crossplateform-2FA_api'
+    ports:
+      - '${API_EXTERNAL_PORT}:${API_INTERNAL_PORT}'
+    depends_on:
+      - database
+    volumes:
+      - '$PWD/crossplt2FA/logs/API:/usr/src/app/logs'
+    networks:
+      backend:
+        ipv4_address: ${API_EXTERNAL_IP}
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${SUBNET_IP}/${SUBNET_MASK}
